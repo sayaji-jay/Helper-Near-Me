@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block title %}Register as Worker - {{ app_name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .register-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    .register-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        padding: 50px;
+        max-width: 700px;
+        width: 100%;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #374151;
+        font-size: 14px;
+    }
+
+    .required {
+        color: #ef4444;
+        margin-left: 2px;
+    }
+
+    .form-input, .form-textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 15px;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+        outline: none;
+        border-color: #5333ed;
+        box-shadow: 0 0 0 3px rgba(83, 51, 237, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-help {
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 6px;
+    }
+
+    .skills-input-wrapper {
+        position: relative;
+    }
+
+    .skill-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+        min-height: 40px;
+        padding: 8px;
+        border: 2px dashed #e5e7eb;
+        border-radius: 10px;
+    }
+
+    .skill-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .skill-tag button {
+        background: rgba(255, 255, 255, 0.3);
+        border: none;
+        color: white;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+
+    .skill-tag button:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .alert {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        display: none;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 2px solid #10b981;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 2px solid #ef4444;
+    }
+
+    .spinner {
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .header-section {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .header-section h1 {
+        font-size: 32px;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+
+    .header-section p {
+        font-size: 16px;
+        color: #6b7280;
+    }
+
+    .grid-2-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    @media (max-width: 640px) {
+        .register-card {
+            padding: 30px 20px;
+        }
+
+        .grid-2-cols {
+            grid-template-columns: 1fr;
+        }
+
+        .header-section h1 {
+            font-size: 24px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-card">
+        <div class="header-section">
+            <h1>Join as a Worker</h1>
+            <p>Share your skills and connect with clients looking for your expertise</p>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alert-success" class="alert alert-success"></div>
+        <div id="alert-error" class="alert alert-error"></div>
+
+        <form id="register-form">
+            <!-- Name -->
+            <div class="form-group">
+                <label class="form-label">Full Name <span class="required">*</span></label>
+                <input type="text" id="name" class="form-input" placeholder="Enter your full name" required>
+            </div>
+
+            <!-- Email & Phone -->
+            <div class="grid-2-cols">
+                <div class="form-group">
+                    <label class="form-label">Email <span class="required">*</span></label>
+                    <input type="email" id="email" class="form-input" placeholder="your@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phone" class="form-input" placeholder="+91 98765 43210" required>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="form-group">
+                <label class="form-label">Location <span class="required">*</span></label>
+                <input type="text" id="location" class="form-input" placeholder="City, State" required>
+                <p class="form-help">Enter your city and state where you provide services</p>
+            </div>
+
+            <!-- Skills -->
+            <div class="form-group">
+                <label class="form-label">Skills <span class="required">*</span></label>
+                <div class="skills-input-wrapper">
+                    <input
+                        type="text"
+                        id="skills-input"
+                        class="form-input"
+                        placeholder="Type a skill and press Enter"
+                    >
+                    <p class="form-help">Press Enter after each skill to add it</p>
+                    <div id="skill-tags" class="skill-tags">
+                        <!-- Skill tags will be added here -->
+                    </div>
+                </div>
+                <input type="hidden" id="skills-hidden" required>
+            </div>
+
+            <!-- Experience -->
+            <div class="form-group">
+                <label class="form-label">Years of Experience <span class="required">*</span></label>
+                <input type="text" id="experience" class="form-input" placeholder="e.g., 5 years" required>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label class="form-label">About You <span class="required">*</span></label>
+                <textarea
+                    id="description"
+                    class="form-textarea"
+                    placeholder="Tell potential clients about your skills, experience, and what makes you unique..."
+                    required
+                ></textarea>
+                <p class="form-help">Write a brief description about your expertise and services</p>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn" id="submit-btn">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span id="submit-text">Register Now</span>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let skills = [];
+
+    // Skills Input Handler
+    const skillsInput = document.getElementById('skills-input');
+    const skillTagsContainer = document.getElementById('skill-tags');
+    const skillsHidden = document.getElementById('skills-hidden');
+
+    skillsInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const skill = skillsInput.value.trim();
+
+            if (skill && !skills.includes(skill)) {
+                skills.push(skill);
+                addSkillTag(skill);
+                skillsInput.value = '';
+                updateHiddenSkills();
+            }
+        }
+    });
+
+    function addSkillTag(skill) {
+        const tag = document.createElement('div');
+        tag.className = 'skill-tag';
+        tag.innerHTML = `
+            <span>${skill}</span>
+            <button type="button" onclick="removeSkill('${skill}')">×</button>
+        `;
+        skillTagsContainer.appendChild(tag);
+    }
+
+    window.removeSkill = function(skill) {
+        skills = skills.filter(s => s !== skill);
+        renderSkillTags();
+        updateHiddenSkills();
+    }
+
+    function renderSkillTags() {
+        skillTagsContainer.innerHTML = '';
+        skills.forEach(skill => addSkillTag(skill));
+    }
+
+    function updateHiddenSkills() {
+        skillsHidden.value = skills.join(',');
+    }
+
+    // Form Submission
+    const form = document.getElementById('register-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitText = document.getElementById('submit-text');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Validate skills
+        if (skills.length === 0) {
+            showAlert('error', 'Please add at least one skill');
+            return;
+        }
+
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitText.textContent = 'Registering...';
+        submitBtn.innerHTML = `
+            <div class="spinner"></div>
+            <span>Registering...</span>
+        `;
+
+        const userData = {
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            location: document.getElementById('location').value.trim(),
+            skills: skills,
+            experience: document.getElementById('experience').value.trim(),
+            description: document.getElementById('description').value.trim()
+        };
+
+        try {
+            const response = await fetch('/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showAlert('success', 'Registration successful! Redirecting to home page...');
+                form.reset();
+                skills = [];
+                renderSkillTags();
+
+                // Redirect to home page after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                showAlert('error', data.error || 'Registration failed. Please try again.');
+                resetSubmitButton();
+            }
+        } catch (error) {
+            showAlert('error', 'An error occurred. Please try again.');
+            console.error('Error:', error);
+            resetSubmitButton();
+        }
+    });
+
+    function resetSubmitButton() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Register Now</span>
+        `;
+    }
+
+    function showAlert(type, message) {
+        const alertId = type === 'success' ? 'alert-success' : 'alert-error';
+        const alert = document.getElementById(alertId);
+        alert.textContent = message;
+        alert.style.display = 'block';
+
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            alert.style.display = 'none';
+        }, 5000);
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+{% endblock %}
