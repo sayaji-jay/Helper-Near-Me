@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { APP_NAME, ADMIN_PIN } from '@/lib/constants';
 
@@ -40,10 +41,14 @@ export default function Header() {
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#5333ed] to-[#3b1de8] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">H</span>
-                </div>
-                <span className="text-2xl font-bold text-gray-900">{APP_NAME}</span>
+                <Image
+                  src="/Logo.png"
+                  alt={`${APP_NAME} Logo`}
+                  width={180}
+                  height={60}
+                  className="h-12 w-auto object-contain"
+                  priority
+                />
               </Link>
             </div>
 

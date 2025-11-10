@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-const AVAILABLE_SKILLS = [
+const AVAILABLE_WORK_TYPES = [
   'Plumber',
   'Electrician',
   'Carpenter',
@@ -19,6 +19,8 @@ const AVAILABLE_SKILLS = [
   'Cook',
   'Security Guard',
   'Helper',
+  'Construction Worker',
+  'House Keeping',
   'Other',
 ];
 
@@ -29,19 +31,24 @@ export default function AddUserPage() {
     name: '',
     email: '',
     phone: '',
-    location: '',
-    skills: [] as string[],
-    description: '',
+    gender: '',
+    work: [] as string[],
+    address: '',
+    village: '',
+    city: '',
+    state: '',
+    companyName: '',
     experience: '',
+    description: '',
     avatar: '',
   });
 
-  const handleSkillToggle = (skill: string) => {
+  const handleWorkToggle = (work: string) => {
     setFormData((prev) => ({
       ...prev,
-      skills: prev.skills.includes(skill)
-        ? prev.skills.filter((s) => s !== skill)
-        : [...prev.skills, skill],
+      work: prev.work.includes(work)
+        ? prev.work.filter((w) => w !== work)
+        : [...prev.work, work],
     }));
   };
 
@@ -61,16 +68,28 @@ export default function AddUserPage() {
       alert('Please enter a phone number');
       return;
     }
-    if (!formData.location.trim()) {
-      alert('Please enter a location');
+    if (!formData.gender) {
+      alert('Please select a gender');
       return;
     }
-    if (formData.skills.length === 0) {
-      alert('Please select at least one skill');
+    if (formData.work.length === 0) {
+      alert('Please select at least one work type');
       return;
     }
-    if (!formData.description.trim()) {
-      alert('Please enter a description');
+    if (!formData.address.trim()) {
+      alert('Please enter an address');
+      return;
+    }
+    if (!formData.village.trim()) {
+      alert('Please enter a village');
+      return;
+    }
+    if (!formData.city.trim()) {
+      alert('Please enter a city');
+      return;
+    }
+    if (!formData.state.trim()) {
+      alert('Please enter a state');
       return;
     }
     if (!formData.experience.trim()) {
@@ -181,61 +200,124 @@ export default function AddUserPage() {
               />
             </div>
 
-            {/* Location */}
+            {/* Gender */}
             <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                Location <span className="text-red-500">*</span>
+              <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
+                Gender <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              <select
+                id="gender"
+                value={formData.gender}
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="City, State"
-              />
+              >
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
 
-            {/* Skills */}
+            {/* Work Types */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Skills <span className="text-red-500">*</span>
+                Work Type <span className="text-red-500">*</span>
               </label>
               <div className="flex flex-wrap gap-2">
-                {AVAILABLE_SKILLS.map((skill) => (
+                {AVAILABLE_WORK_TYPES.map((work) => (
                   <button
-                    key={skill}
+                    key={work}
                     type="button"
-                    onClick={() => handleSkillToggle(skill)}
+                    onClick={() => handleWorkToggle(work)}
                     className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
-                      formData.skills.includes(skill)
+                      formData.work.includes(work)
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-white text-gray-700 border-gray-300 hover:border-blue-600'
                     }`}
                   >
-                    {skill}
+                    {work}
                   </button>
                 ))}
               </div>
-              {formData.skills.length > 0 && (
+              {formData.work.length > 0 && (
                 <p className="mt-2 text-sm text-gray-600">
-                  Selected: {formData.skills.join(', ')}
+                  Selected: {formData.work.join(', ')}
                 </p>
               )}
             </div>
 
-            {/* Description */}
+            {/* Address */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                Description <span className="text-red-500">*</span>
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+                Address <span className="text-red-500">*</span>
               </label>
               <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
+                id="address"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                rows={2}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Describe work experience, specializations, and expertise..."
+                placeholder="House no, Street, Landmark..."
+              />
+            </div>
+
+            {/* Village, City, State in a grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="village" className="block text-sm font-medium text-gray-700 mb-2">
+                  Village <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="village"
+                  value={formData.village}
+                  onChange={(e) => setFormData({ ...formData, village: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Village name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                  City <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="City name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-2">
+                  State <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="state"
+                  value={formData.state}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="State name"
+                />
+              </div>
+            </div>
+
+            {/* Company Name */}
+            <div>
+              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
+                Company Name (Optional)
+              </label>
+              <input
+                type="text"
+                id="companyName"
+                value={formData.companyName}
+                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Current or previous company"
               />
             </div>
 
@@ -251,6 +333,21 @@ export default function AddUserPage() {
                 onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., 5 years, 10+ years, Fresher"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                Description (Optional)
+              </label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={4}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Describe work experience, specializations, and expertise..."
               />
             </div>
 

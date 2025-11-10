@@ -28,8 +28,13 @@ export async function GET(
       name: user.name,
       email: user.email,
       phone: user.phone,
-      location: user.location,
-      skills: user.skills,
+      gender: user.gender,
+      work: user.work,
+      address: user.address,
+      village: user.village,
+      city: user.city,
+      state: user.state,
+      companyName: user.companyName,
       description: user.description,
       experience: user.experience,
       avatar: user.avatar,
@@ -94,9 +99,14 @@ export async function PUT(
     if (data.name) updateData.name = data.name.trim();
     if (data.email) updateData.email = data.email.trim().toLowerCase();
     if (data.phone) updateData.phone = data.phone.trim();
-    if (data.location) updateData.location = data.location.trim();
-    if (data.skills) updateData.skills = data.skills;
-    if (data.description) updateData.description = data.description.trim();
+    if (data.gender) updateData.gender = data.gender.trim();
+    if (data.work) updateData.work = data.work;
+    if (data.address) updateData.address = data.address.trim();
+    if (data.village) updateData.village = data.village.trim();
+    if (data.city) updateData.city = data.city.trim();
+    if (data.state) updateData.state = data.state.trim();
+    if (data.companyName !== undefined) updateData.companyName = data.companyName.trim();
+    if (data.description !== undefined) updateData.description = data.description.trim();
     if (data.experience) updateData.experience = data.experience.trim();
     if (data.avatar) updateData.avatar = data.avatar;
 
@@ -112,8 +122,13 @@ export async function PUT(
       name: updatedUser!.name,
       email: updatedUser!.email,
       phone: updatedUser!.phone,
-      location: updatedUser!.location,
-      skills: updatedUser!.skills,
+      gender: updatedUser!.gender,
+      work: updatedUser!.work,
+      address: updatedUser!.address,
+      village: updatedUser!.village,
+      city: updatedUser!.city,
+      state: updatedUser!.state,
+      companyName: updatedUser!.companyName,
       description: updatedUser!.description,
       experience: updatedUser!.experience,
       avatar: updatedUser!.avatar,

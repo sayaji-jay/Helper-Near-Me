@@ -56,13 +56,13 @@ export async function POST(request: NextRequest) {
           cleanedData[key] = value === null || value === undefined || value === 'NaN' || value === '' ? '' : String(value).trim();
         }
 
-        // Convert skills from string to array
-        if (cleanedData.skills && typeof cleanedData.skills === 'string') {
-          cleanedData.skills = cleanedData.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+        // Convert work from string to array
+        if (cleanedData.work && typeof cleanedData.work === 'string') {
+          cleanedData.work = cleanedData.work.split(',').map((s: string) => s.trim()).filter((s: string) => s);
         }
 
         // Validate required fields
-        const requiredFields = ['name', 'email', 'phone', 'location', 'skills', 'description', 'experience'];
+        const requiredFields = ['name', 'email', 'phone', 'gender', 'work', 'address', 'village', 'city', 'state', 'experience'];
         for (const field of requiredFields) {
           if (!cleanedData[field] || (Array.isArray(cleanedData[field]) && cleanedData[field].length === 0)) {
             errors.push(`Row ${rowNum}: Missing required field: ${field}`);
@@ -86,15 +86,20 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // Create user
+        // Create user with new fields
         await User.create({
           name: cleanedData.name,
           email: cleanedData.email.toLowerCase(),
           phone: cleanedData.phone,
-          location: cleanedData.location,
-          skills: cleanedData.skills,
-          description: cleanedData.description,
+          gender: cleanedData.gender,
+          work: cleanedData.work,
+          address: cleanedData.address,
+          village: cleanedData.village,
+          city: cleanedData.city,
+          state: cleanedData.state,
+          companyName: cleanedData.companyName || '',
           experience: cleanedData.experience,
+          description: cleanedData.description || '',
           avatar: cleanedData.avatar || undefined,
         });
 
@@ -108,6 +113,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: `Bulk upload completed. Inserted: ${insertedCount}, Errors: ${errorCount}`,
+      count: insertedCount,
       inserted: insertedCount,
       errors: errorCount,
       error_details: errors,

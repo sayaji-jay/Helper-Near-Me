@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search') || '';
-    const skillsParam = searchParams.get('skills') || '';
+    const workParam = searchParams.get('work') || searchParams.get('skills') || ''; // Support both for backward compatibility
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '100');
 
@@ -20,32 +20,34 @@ export async function GET(request: NextRequest) {
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { location: { $regex: search, $options: 'i' } },
+        { city: { $regex: search, $options: 'i' } },
+        { village: { $regex: search, $options: 'i' } },
+        { state: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
-        { skills: { $regex: search, $options: 'i' } },
+        { work: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
         { phone: { $regex: search, $options: 'i' } },
       ];
     }
 
-    // Add skill filter - support multiple skills
-    if (skillsParam && skillsParam !== 'all') {
-      const skillsList = skillsParam.split(',').map((s) => s.trim()).filter((s) => s);
+    // Add work filter - support multiple work types
+    if (workParam && workParam !== 'all') {
+      const workList = workParam.split(',').map((s) => s.trim()).filter((s) => s);
 
-      if (skillsList.length > 0) {
-        const skillConditions = skillsList.map((skill) => ({
-          skills: { $regex: skill, $options: 'i' },
+      if (workList.length > 0) {
+        const workConditions = workList.map((workType) => ({
+          work: { $regex: workType, $options: 'i' },
         }));
 
         // Merge with existing query
         if (query.$or) {
           query.$and = [
             { $or: query.$or }, // Search conditions
-            { $or: skillConditions }, // Skill conditions
+            { $or: workConditions }, // Work conditions
           ];
           delete query.$or;
         } else {
-          query.$or = skillConditions;
+          query.$or = workConditions;
         }
       }
     }
@@ -67,8 +69,13 @@ export async function GET(request: NextRequest) {
       name: user.name,
       email: user.email,
       phone: user.phone,
-      location: user.location,
-      skills: user.skills,
+      gender: user.gender,
+      work: user.work,
+      address: user.address,
+      village: user.village,
+      city: user.city,
+      state: user.state,
+      companyName: user.companyName,
       description: user.description,
       experience: user.experience,
       avatar: user.avatar || `https://ui-avatars.com/api/?name=${user.name.replace(/\s+/g, '+')}&background=667eea&color=fff&size=200`,
@@ -105,7 +112,7 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
 
     // Validate required fields
-    const requiredFields = ['name', 'email', 'phone', 'location', 'skills', 'description', 'experience'];
+    const requiredFields = ['name', 'email', 'phone', 'gender', 'work', 'address', 'village', 'city', 'state', 'experience'];
     for (const field of requiredFields) {
       if (!data[field]) {
         return NextResponse.json(
@@ -129,12 +136,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate skills is an array
-    if (!Array.isArray(data.skills) || data.skills.length === 0) {
+    // Validate work is an array
+    if (!Array.isArray(data.work) || data.work.length === 0) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Skills must be a non-empty array',
+          error: 'Work must be a non-empty array',
         },
         { status: 400 }
       );
@@ -157,21 +164,31 @@ export async function POST(request: NextRequest) {
       name: data.name.trim(),
       email: data.email.trim().toLowerCase(),
       phone: data.phone.trim(),
-      location: data.location.trim(),
-      skills: data.skills,
-      description: data.description.trim(),
+      gender: data.gender.trim(),
+      work: data.work,
+      address: data.address.trim(),
+      village: data.village.trim(),
+      city: data.city.trim(),
+      state: data.state.trim(),
+      companyName: data.companyName?.trim() || '',
+      description: data.description?.trim() || '',
       experience: data.experience.trim(),
       avatar: data.avatar || undefined,
     });
 
-    // Serialize user
+    // Serialize user (cast to any to avoid TypeScript _id issue)
     const serializedUser = {
-      id: user._id.toString(),
+      id: (user._id as any).toString(),
       name: user.name,
       email: user.email,
       phone: user.phone,
-      location: user.location,
-      skills: user.skills,
+      gender: user.gender,
+      work: user.work,
+      address: user.address,
+      village: user.village,
+      city: user.city,
+      state: user.state,
+      companyName: user.companyName,
       description: user.description,
       experience: user.experience,
       avatar: user.avatar,

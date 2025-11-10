@@ -6,27 +6,29 @@ export async function GET() {
   try {
     await connectDB();
 
-    // Get unique skills using aggregation
+    // Get unique work types using aggregation
     const result = await User.aggregate([
-      { $unwind: '$skills' },
-      { $group: { _id: '$skills' } },
+      { $unwind: '$work' },
+      { $group: { _id: '$work' } },
       { $sort: { _id: 1 } },
     ]);
 
-    const skills = result.map((doc) => doc._id).filter((skill) => skill);
+    const workTypes = result.map((doc) => doc._id).filter((work) => work);
 
     return NextResponse.json({
       success: true,
-      skills,
-      total: skills.length,
+      skills: workTypes, // Keep 'skills' key for backward compatibility
+      work: workTypes,
+      total: workTypes.length,
     });
   } catch (error: any) {
-    console.error('Error fetching skills:', error);
+    console.error('Error fetching work types:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Failed to fetch skills',
+        error: error.message || 'Failed to fetch work types',
         skills: [],
+        work: [],
       },
       { status: 500 }
     );

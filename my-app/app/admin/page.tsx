@@ -8,8 +8,13 @@ interface User {
   name: string;
   email: string;
   phone: string;
-  location: string;
-  skills: string[];
+  gender: string;
+  work: string[];
+  address: string;
+  village: string;
+  city: string;
+  state: string;
+  companyName: string;
   description: string;
   experience: string;
   avatar: string;
@@ -22,6 +27,9 @@ export default function AdminPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [total, setTotal] = useState(0);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [showBulkUploadDialog, setShowBulkUploadDialog] = useState(false);
+  const [bulkFile, setBulkFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -80,6 +88,56 @@ export default function AdminPage() {
     }
   }
 
+  function downloadTemplate() {
+    const csvContent = 'name,email,phone,gender,work,address,village,city,state,companyName,experience,description\n' +
+                       'John Doe,john@example.com,+91 9876543210,Male,"Plumber,Electrician","123 Main St",Wadgaon,Pune,Maharashtra,ABC Company,5 years,Experienced plumber and electrician\n' +
+                       'Jane Smith,jane@example.com,+91 9876543211,Female,Carpenter,"456 Oak Ave",Shivaji Nagar,Mumbai,Maharashtra,XYZ Corp,3 years,Skilled carpenter';
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'user_upload_template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  async function handleBulkUpload() {
+    if (!bulkFile) {
+      alert('Please select a file to upload');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', bulkFile);
+
+      const response = await fetch('/api/users/bulk-upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`Successfully uploaded ${data.count} users`);
+        setShowBulkUploadDialog(false);
+        setBulkFile(null);
+        loadUsers();
+      } else {
+        alert('Failed to upload users: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error uploading users:', error);
+      alert('Error uploading users. Check console for details.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -94,6 +152,12 @@ export default function AdminPage() {
               >
                 View Site
               </Link>
+              <button
+                onClick={() => setShowBulkUploadDialog(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                + Add Multiple Users
+              </button>
               <Link
                 href="/admin/add-user"
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -112,7 +176,7 @@ export default function AdminPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, email, location, or skills..."
+              placeholder="Search by name, email, city, village, or work type..."
               className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <svg
@@ -167,7 +231,7 @@ export default function AdminPage() {
                       Location
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Skills
+                      Work Type
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Experience
@@ -197,21 +261,22 @@ export default function AdminPage() {
                         <div className="text-sm text-gray-900">{user.phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{user.location}</div>
+                        <div className="text-sm text-gray-900">{user.village}, {user.city}</div>
+                        <div className="text-sm text-gray-500">{user.state}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1">
-                          {user.skills.slice(0, 3).map((skill, idx) => (
+                          {user.work.slice(0, 3).map((workType, idx) => (
                             <span
                               key={idx}
                               className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
                             >
-                              {skill}
+                              {workType}
                             </span>
                           ))}
-                          {user.skills.length > 3 && (
+                          {user.work.length > 3 && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                              +{user.skills.length - 3}
+                              +{user.work.length - 3}
                             </span>
                           )}
                         </div>
@@ -266,6 +331,85 @@ export default function AdminPage() {
                 </Link>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Bulk Upload Dialog */}
+        {showBulkUploadDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold text-gray-900">Bulk Upload Users</h2>
+                  <button
+                    onClick={() => {
+                      setShowBulkUploadDialog(false);
+                      setBulkFile(null);
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Upload multiple users at once using a CSV file. Download the template to see the required format.
+                    </p>
+
+                    {/* Download Template Button */}
+                    <button
+                      onClick={downloadTemplate}
+                      className="w-full px-4 py-3 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Download CSV Template
+                    </button>
+                  </div>
+
+                  {/* File Upload */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Upload CSV File
+                    </label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                      <input
+                        type="file"
+                        accept=".csv"
+                        onChange={(e) => setBulkFile(e.target.files?.[0] || null)}
+                        className="hidden"
+                        id="bulk-upload-input"
+                      />
+                      <label
+                        htmlFor="bulk-upload-input"
+                        className="cursor-pointer flex flex-col items-center"
+                      >
+                        <svg className="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span className="text-sm text-gray-600">
+                          {bulkFile ? bulkFile.name : 'Click to select CSV file'}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Upload Button */}
+                  <button
+                    onClick={handleBulkUpload}
+                    disabled={!bulkFile || uploading}
+                    className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                  >
+                    {uploading ? 'Uploading...' : 'Upload Users'}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

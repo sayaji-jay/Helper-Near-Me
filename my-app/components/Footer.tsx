@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { APP_NAME, ADMIN_PIN } from '@/lib/constants';
 
@@ -37,9 +38,15 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-[#1a1a2e]/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700/30 px-6 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-              {/* Left: App Name & Admin Button */}
+              {/* Left: Logo & Admin Button */}
               <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="text-white font-semibold">{APP_NAME}</div>
+                <Image
+                  src="/Logo.png"
+                  alt={`${APP_NAME} Logo`}
+                  width={150}
+                  height={50}
+                  className="h-10 w-auto object-contain brightness-0 invert"
+                />
                 <button
                   onClick={() => setShowPinModal(true)}
                   className="bg-gradient-to-r from-[#5333ed] to-[#3b1de8] text-white px-5 py-2 rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center space-x-2"

@@ -3,8 +3,13 @@ export interface User {
   name: string;
   email: string;
   phone: string;
-  location: string;
-  skills: string[];
+  gender: string;
+  work: string[];
+  address: string;
+  village: string;
+  city: string;
+  state: string;
+  companyName: string;
   description: string;
   experience: string;
   avatar: string;

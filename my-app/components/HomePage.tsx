@@ -13,28 +13,28 @@ export default function HomePage() {
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [allSkills, setAllSkills] = useState<string[]>([]);
+  const [selectedWork, setSelectedWork] = useState<string[]>([]);
+  const [allWorkTypes, setAllWorkTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const itemsPerPage = 9;
 
   useEffect(() => {
-    loadSkills();
+    loadWorkTypes();
   }, []);
 
   useEffect(() => {
     loadUsers();
-  }, [currentPage, selectedSkills, searchQuery]);
+  }, [currentPage, selectedWork, searchQuery]);
 
-  async function loadSkills() {
+  async function loadWorkTypes() {
     try {
       const response = await fetch('/api/skills');
       const data = await response.json();
       if (data.success) {
-        setAllSkills(data.skills);
+        setAllWorkTypes(data.work || data.skills); // Support both for backward compatibility
       }
     } catch (error) {
-      console.error('Error loading skills:', error);
+      console.error('Error loading work types:', error);
     }
   }
 
@@ -47,8 +47,8 @@ export default function HomePage() {
         url += `&search=${encodeURIComponent(searchQuery)}`;
       }
 
-      if (selectedSkills.length > 0) {
-        url += `&skills=${encodeURIComponent(selectedSkills.join(','))}`;
+      if (selectedWork.length > 0) {
+        url += `&work=${encodeURIComponent(selectedWork.join(','))}`;
       }
 
       const response = await fetch(url);
@@ -65,14 +65,14 @@ export default function HomePage() {
     }
   }
 
-  const handleSkillToggle = (skill: string) => {
-    if (skill === 'all') {
-      setSelectedSkills([]);
+  const handleWorkToggle = (work: string) => {
+    if (work === 'all') {
+      setSelectedWork([]);
     } else {
-      setSelectedSkills(prev =>
-        prev.includes(skill)
-          ? prev.filter(s => s !== skill)
-          : [...prev, skill]
+      setSelectedWork(prev =>
+        prev.includes(work)
+          ? prev.filter(w => w !== work)
+          : [...prev, work]
       );
     }
     setCurrentPage(1);
@@ -102,7 +102,7 @@ export default function HomePage() {
                   setSearchQuery(e.target.value);
                   setCurrentPage(1);
                 }}
-                placeholder="Search by name, location, skills, or description..."
+                placeholder="Search by name, city, village, work type, or description..."
                 className="w-full px-6 py-4 pr-12 text-base rounded-lg border-2 border-gray-300 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all duration-200 bg-white shadow-sm"
               />
               <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -116,26 +116,26 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto mb-12">
             <div className="flex flex-wrap justify-center gap-3">
               <button
-                onClick={() => handleSkillToggle('all')}
+                onClick={() => handleWorkToggle('all')}
                 className={`px-5 py-2.5 rounded-full border-2 font-medium text-sm transition-all ${
-                  selectedSkills.length === 0
+                  selectedWork.length === 0
                     ? 'bg-gray-900 text-white border-gray-900'
                     : 'bg-white text-gray-600 border-gray-300 hover:border-gray-900'
                 }`}
               >
                 All
               </button>
-              {allSkills.map((skill) => (
+              {allWorkTypes.map((work) => (
                 <button
-                  key={skill}
-                  onClick={() => handleSkillToggle(skill)}
+                  key={work}
+                  onClick={() => handleWorkToggle(work)}
                   className={`px-5 py-2.5 rounded-full border-2 font-medium text-sm transition-all ${
-                    selectedSkills.includes(skill)
+                    selectedWork.includes(work)
                       ? 'bg-gray-900 text-white border-gray-900'
                       : 'bg-white text-gray-600 border-gray-300 hover:border-gray-900'
                   }`}
                 >
-                  {skill}
+                  {work}
                 </button>
               ))}
             </div>
