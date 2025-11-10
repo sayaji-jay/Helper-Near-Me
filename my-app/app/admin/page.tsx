@@ -285,13 +285,21 @@ export default function AdminPage() {
                         <div className="text-sm text-gray-900">{user.experience}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          disabled={deleting === user.id}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                        >
-                          {deleting === user.id ? 'Deleting...' : 'Delete'}
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <Link
+                            href={`/admin/edit-user/${user.id}`}
+                            className="text-blue-600 hover:text-blue-900 font-medium"
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            disabled={deleting === user.id}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50 font-medium"
+                          >
+                            {deleting === user.id ? 'Deleting...' : 'Delete'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
 const AVAILABLE_WORK_TYPES = [
@@ -24,9 +24,13 @@ const AVAILABLE_WORK_TYPES = [
   'Other',
 ];
 
-export default function AddUserPage() {
+export default function EditUserPage() {
   const router = useRouter();
+  const params = useParams();
+  const userId = params.id as string;
+
   const [loading, setLoading] = useState(false);
+  const [fetchingUser, setFetchingUser] = useState(true);
   const [customWorkType, setCustomWorkType] = useState('');
   const [formData, setFormData] = useState({
     name: '',
@@ -43,6 +47,48 @@ export default function AddUserPage() {
     description: '',
     avatar: '',
   });
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    if (userId) {
+      loadUserData();
+    }
+  }, [userId]);
+
+  async function loadUserData() {
+    setFetchingUser(true);
+    try {
+      const response = await fetch(`/api/users/${userId}`);
+      const data = await response.json();
+
+      if (data.success && data.user) {
+        setFormData({
+          name: data.user.name || '',
+          email: data.user.email || '',
+          phone: data.user.phone || '',
+          gender: data.user.gender || '',
+          work: data.user.work || [],
+          address: data.user.address || '',
+          village: data.user.village || '',
+          city: data.user.city || '',
+          state: data.user.state || '',
+          companyName: data.user.companyName || '',
+          experience: data.user.experience || '',
+          description: data.user.description || '',
+          avatar: data.user.avatar || '',
+        });
+      } else {
+        alert('Failed to load user data: ' + (data.error || 'Unknown error'));
+        router.push('/admin');
+      }
+    } catch (error) {
+      console.error('Error loading user:', error);
+      alert('Error loading user data. Check console for details.');
+      router.push('/admin');
+    } finally {
+      setFetchingUser(false);
+    }
+  }
 
   const handleWorkToggle = (work: string) => {
     setFormData((prev) => ({
@@ -125,8 +171,8 @@ export default function AddUserPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -136,18 +182,29 @@ export default function AddUserPage() {
       const data = await response.json();
 
       if (data.success) {
-        alert('User created successfully!');
+        alert('User updated successfully!');
         router.push('/admin');
       } else {
-        alert('Failed to create user: ' + (data.error || 'Unknown error'));
+        alert('Failed to update user: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
-      console.error('Error creating user:', error);
-      alert('Error creating user. Check console for details.');
+      console.error('Error updating user:', error);
+      alert('Error updating user. Check console for details.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (fetchingUser) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading user data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -173,8 +230,8 @@ export default function AddUserPage() {
             </svg>
             Back to Admin
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Add New User</h1>
-          <p className="text-gray-600 mt-2">Fill in the details to add a new worker</p>
+          <h1 className="text-3xl font-bold text-gray-900">Edit User</h1>
+          <p className="text-gray-600 mt-2">Update the worker details</p>
         </div>
 
         {/* Form */}
@@ -446,7 +503,7 @@ export default function AddUserPage() {
                 placeholder="https://example.com/avatar.jpg"
               />
               <p className="mt-1 text-sm text-gray-500">
-                Leave empty to auto-generate an avatar
+                Leave empty to keep auto-generated avatar
               </p>
             </div>
           </div>
@@ -458,7 +515,7 @@ export default function AddUserPage() {
               disabled={loading}
               className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'Creating User...' : 'Create User'}
+              {loading ? 'Updating User...' : 'Update User'}
             </button>
             <Link
               href="/admin"
