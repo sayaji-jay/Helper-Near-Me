@@ -27,10 +27,10 @@ const UserSchema = new Schema<IUser>(
     },
     email: {
       type: String,
-      required: [true, 'Email is required'],
-      unique: true,
+      required: false,
       lowercase: true,
       trim: true,
+      default: '',
     },
     phone: {
       type: String,
@@ -39,9 +39,10 @@ const UserSchema = new Schema<IUser>(
     },
     gender: {
       type: String,
-      required: [true, 'Gender is required'],
-      enum: ['Male', 'Female', 'Other'],
+      required: false,
+      enum: ['Male', 'Female', 'Other', ''],
       trim: true,
+      default: '',
     },
     work: {
       type: [String],
@@ -53,23 +54,27 @@ const UserSchema = new Schema<IUser>(
     },
     address: {
       type: String,
-      required: [true, 'Address is required'],
+      required: false,
       trim: true,
+      default: '',
     },
     village: {
       type: String,
-      required: [true, 'Village is required'],
+      required: false,
       trim: true,
+      default: '',
     },
     city: {
       type: String,
-      required: [true, 'City is required'],
+      required: false,
       trim: true,
+      default: '',
     },
     state: {
       type: String,
-      required: [true, 'State is required'],
+      required: false,
       trim: true,
+      default: '',
     },
     companyName: {
       type: String,
@@ -79,8 +84,9 @@ const UserSchema = new Schema<IUser>(
     },
     experience: {
       type: String,
-      required: [true, 'Experience is required'],
+      required: false,
       trim: true,
+      default: '',
     },
     description: {
       type: String,
@@ -104,11 +110,11 @@ const UserSchema = new Schema<IUser>(
 // Create indexes
 UserSchema.index({ name: 'text', description: 'text', work: 'text', city: 'text', village: 'text', state: 'text' });
 UserSchema.index({ name: 1 });
+UserSchema.index({ phone: 1 });
 UserSchema.index({ city: 1 });
 UserSchema.index({ state: 1 });
 UserSchema.index({ village: 1 });
 UserSchema.index({ work: 1 });
-UserSchema.index({ email: 1 }, { unique: true });
 
 // Delete existing model if it exists (for hot reload in development)
 if (mongoose.models.User) {

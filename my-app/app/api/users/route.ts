@@ -111,22 +111,29 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
 
-    // Validate required fields
-    const requiredFields = ['name', 'email', 'phone', 'gender', 'work', 'address', 'village', 'city', 'state', 'experience'];
-    for (const field of requiredFields) {
-      if (!data[field]) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Missing required field: ${field}`,
-          },
-          { status: 400 }
-        );
-      }
+    // Validate required fields - only name, phone, and work are required
+    if (!data.name || !data.name.trim()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Name is required',
+        },
+        { status: 400 }
+      );
     }
 
-    // Validate email format
-    if (!data.email.includes('@')) {
+    if (!data.phone || !data.phone.trim()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Phone is required',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format if provided
+    if (data.email && data.email.trim() && !data.email.includes('@')) {
       return NextResponse.json(
         {
           success: false,

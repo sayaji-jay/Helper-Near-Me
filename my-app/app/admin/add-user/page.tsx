@@ -80,45 +80,22 @@ export default function AddUserPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
+    // Validation - Only name, phone, and work are required
     if (!formData.name.trim()) {
       alert('Please enter a name');
-      return;
-    }
-    if (!formData.email.trim() || !formData.email.includes('@')) {
-      alert('Please enter a valid email');
       return;
     }
     if (!formData.phone.trim()) {
       alert('Please enter a phone number');
       return;
     }
-    if (!formData.gender) {
-      alert('Please select a gender');
-      return;
-    }
     if (formData.work.length === 0) {
       alert('Please select at least one work type');
       return;
     }
-    if (!formData.address.trim()) {
-      alert('Please enter an address');
-      return;
-    }
-    if (!formData.village.trim()) {
-      alert('Please enter a village');
-      return;
-    }
-    if (!formData.city.trim()) {
-      alert('Please enter a city');
-      return;
-    }
-    if (!formData.state.trim()) {
-      alert('Please enter a state');
-      return;
-    }
-    if (!formData.experience.trim()) {
-      alert('Please enter experience');
+    // Optional email validation - if provided, must be valid
+    if (formData.email.trim() && !formData.email.includes('@')) {
+      alert('Please enter a valid email');
       return;
     }
 
@@ -198,7 +175,7 @@ export default function AddUserPage() {
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email <span className="text-red-500">*</span>
+                Email (Optional)
               </label>
               <input
                 type="email"
@@ -228,7 +205,7 @@ export default function AddUserPage() {
             {/* Gender */}
             <div>
               <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
-                Gender <span className="text-red-500">*</span>
+                Gender (Optional)
               </label>
               <select
                 id="gender"
@@ -330,7 +307,7 @@ export default function AddUserPage() {
             {/* Address */}
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                Address <span className="text-red-500">*</span>
+                Address (Optional)
               </label>
               <textarea
                 id="address"
@@ -346,7 +323,7 @@ export default function AddUserPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label htmlFor="village" className="block text-sm font-medium text-gray-700 mb-2">
-                  Village <span className="text-red-500">*</span>
+                  Village (Optional)
                 </label>
                 <input
                   type="text"
@@ -360,7 +337,7 @@ export default function AddUserPage() {
 
               <div>
                 <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-                  City <span className="text-red-500">*</span>
+                  City (Optional)
                 </label>
                 <input
                   type="text"
@@ -374,7 +351,7 @@ export default function AddUserPage() {
 
               <div>
                 <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-2">
-                  State <span className="text-red-500">*</span>
+                  State (Optional)
                 </label>
                 <input
                   type="text"
@@ -405,7 +382,7 @@ export default function AddUserPage() {
             {/* Experience */}
             <div>
               <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-2">
-                Experience <span className="text-red-500">*</span>
+                Experience (Optional)
               </label>
               <input
                 type="text"

@@ -61,44 +61,55 @@ export async function POST(request: NextRequest) {
           cleanedData.work = cleanedData.work.split(',').map((s: string) => s.trim()).filter((s: string) => s);
         }
 
-        // Validate required fields
-        const requiredFields = ['name', 'email', 'phone', 'gender', 'work', 'address', 'village', 'city', 'state', 'experience'];
-        for (const field of requiredFields) {
-          if (!cleanedData[field] || (Array.isArray(cleanedData[field]) && cleanedData[field].length === 0)) {
-            errors.push(`Row ${rowNum}: Missing required field: ${field}`);
-            errorCount++;
-            continue;
-          }
+        // Validate required fields - only name, phone, and work are required
+        if (!cleanedData.name || !cleanedData.name.trim()) {
+          errors.push(`Row ${rowNum}: Name is required`);
+          errorCount++;
+          continue;
         }
 
-        // Validate email format
-        if (!cleanedData.email.includes('@')) {
+        if (!cleanedData.phone || !cleanedData.phone.trim()) {
+          errors.push(`Row ${rowNum}: Phone is required`);
+          errorCount++;
+          continue;
+        }
+
+        if (!cleanedData.work || (Array.isArray(cleanedData.work) && cleanedData.work.length === 0)) {
+          errors.push(`Row ${rowNum}: Work type is required`);
+          errorCount++;
+          continue;
+        }
+
+        // Validate email format if provided
+        if (cleanedData.email && cleanedData.email.trim() && !cleanedData.email.includes('@')) {
           errors.push(`Row ${rowNum}: Invalid email format`);
           errorCount++;
           continue;
         }
 
-        // Check if email already exists
-        const existingUser = await User.findOne({ email: cleanedData.email.toLowerCase() });
-        if (existingUser) {
-          errors.push(`Row ${rowNum}: Email ${cleanedData.email} already exists`);
-          errorCount++;
-          continue;
+        // Check if email already exists (only if email is provided)
+        if (cleanedData.email && cleanedData.email.trim()) {
+          const existingUser = await User.findOne({ email: cleanedData.email.toLowerCase() });
+          if (existingUser) {
+            errors.push(`Row ${rowNum}: Email ${cleanedData.email} already exists`);
+            errorCount++;
+            continue;
+          }
         }
 
         // Create user with new fields
         await User.create({
           name: cleanedData.name,
-          email: cleanedData.email.toLowerCase(),
+          email: cleanedData.email ? cleanedData.email.toLowerCase() : '',
           phone: cleanedData.phone,
-          gender: cleanedData.gender,
+          gender: cleanedData.gender || '',
           work: cleanedData.work,
-          address: cleanedData.address,
-          village: cleanedData.village,
-          city: cleanedData.city,
-          state: cleanedData.state,
+          address: cleanedData.address || '',
+          village: cleanedData.village || '',
+          city: cleanedData.city || '',
+          state: cleanedData.state || '',
           companyName: cleanedData.companyName || '',
-          experience: cleanedData.experience,
+          experience: cleanedData.experience || '',
           description: cleanedData.description || '',
           avatar: cleanedData.avatar || undefined,
         });
