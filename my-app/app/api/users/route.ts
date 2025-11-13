@@ -155,16 +155,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email already exists
-    const existingUser = await User.findOne({ email: data.email.toLowerCase() });
-    if (existingUser) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'User with this email already exists',
-        },
-        { status: 400 }
-      );
-    }
+    // const existingUser = await User.findOne({ email: data.email.toLowerCase() });
+    // if (existingUser) {
+    //   return NextResponse.json(
+    //     {
+    //       success: false,
+    //       error: 'User with this email already exists',
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
+
+    
 
     // Create user
     const user = await User.create({
