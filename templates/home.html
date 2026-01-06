@@ -137,24 +137,9 @@
 
         <!-- Filter Pills -->
         <div class="max-w-4xl mx-auto mb-12">
-            <div class="flex flex-wrap justify-center gap-3">
-                <button class="pill-filter active" data-filter="all">All</button>
-                <button class="pill-filter" data-filter="fabrication">Fabrication</button>
-                <button class="pill-filter" data-filter="electrical">Electrical Sales And Service</button>
-                <button class="pill-filter" data-filter="ac">AC Service</button>
-                <button class="pill-filter" data-filter="auto">Auto Rixa</button>
-                <button class="pill-filter" data-filter="car">Car Reparing</button>
-                <button class="pill-filter" data-filter="carpenter">Carpenter</button>
-                <button class="pill-filter" data-filter="cnc">CNC - VLC Setting</button>
-                <button class="pill-filter" data-filter="colour">Colour Kam</button>
-                <button class="pill-filter" data-filter="electrician">Electrician</button>
-                <button class="pill-filter" data-filter="fabricator">Fabricator</button>
-                <button class="pill-filter" data-filter="mali">Mali Kam</button>
-                <button class="pill-filter" data-filter="ghar">GharKam</button>
-                <button class="pill-filter" data-filter="jeans">Jeans/Cloth Repair</button>
-                <button class="pill-filter" data-filter="kadiya">Kadiyakam</button>
-                <button class="pill-filter" data-filter="tailor">Ledish Tailor</button>
-                <button class="pill-filter" data-filter="plumber">Plumber</button>
+            <div id="skill-filters" class="flex flex-wrap justify-center gap-3">
+                <button class="pill-filter active" data-skill="all">All</button>
+                <!-- Dynamic skill pills will be loaded here -->
             </div>
         </div>
 
@@ -297,59 +282,75 @@
 <script>
     let currentPage = 1;
     let currentSearch = '';
-    let currentFilter = 'all';
+    let selectedSkills = [];  // Changed to array for multiple selection
     const itemsPerPage = 9;
-    let totalUsers = 0;
-    let allUsers = [];
+    let searchDebounceTimer = null; // Timer for debouncing search
 
-    // Load users data
-    async function loadUsersData() {
+    // Load and render skill filter pills
+    async function loadSkillFilters() {
         try {
-            const response = await fetch('/api/users');
+            const response = await fetch('/api/skills');
             const data = await response.json();
-            allUsers = data.users || [];
-            totalUsers = allUsers.length;
-            return allUsers;
+
+            if (data.success && data.skills && data.skills.length > 0) {
+                const filterContainer = document.getElementById('skill-filters');
+                const allButton = filterContainer.querySelector('[data-skill="all"]');
+
+                // Add skill pills after "All" button
+                data.skills.forEach(skill => {
+                    const button = document.createElement('button');
+                    button.className = 'pill-filter';
+                    button.setAttribute('data-skill', skill);
+                    button.textContent = skill;
+                    filterContainer.appendChild(button);
+                });
+
+                // Attach click handlers to all filter buttons
+                attachFilterHandlers();
+            }
         } catch (error) {
-            console.error('Error loading users:', error);
-            return [];
+            console.error('Error loading skills:', error);
         }
     }
 
-    // Filter users based on search and filter
-    function filterUsers(users, search, filter) {
-        let filtered = users;
+    // Attach click handlers to filter buttons
+    function attachFilterHandlers() {
+        const filterBtns = document.querySelectorAll('.pill-filter');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const skill = btn.getAttribute('data-skill');
 
-        // Apply skill filter
-        if (filter !== 'all') {
-            filtered = filtered.filter(user => {
-                return user.skills.some(skill =>
-                    skill.toLowerCase().includes(filter.toLowerCase())
-                );
+                if (skill === 'all') {
+                    // Clear all selections
+                    selectedSkills = [];
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                } else {
+                    // Remove "All" button active state
+                    const allBtn = document.querySelector('[data-skill="all"]');
+                    allBtn.classList.remove('active');
+
+                    // Toggle this skill
+                    if (selectedSkills.includes(skill)) {
+                        // Remove skill
+                        selectedSkills = selectedSkills.filter(s => s !== skill);
+                        btn.classList.remove('active');
+
+                        // If no skills selected, activate "All"
+                        if (selectedSkills.length === 0) {
+                            allBtn.classList.add('active');
+                        }
+                    } else {
+                        // Add skill
+                        selectedSkills.push(skill);
+                        btn.classList.add('active');
+                    }
+                }
+
+                currentPage = 1;
+                loadAndDisplayUsers();
             });
-        }
-
-        // Apply search filter
-        if (search) {
-            const searchLower = search.toLowerCase();
-            filtered = filtered.filter(user => {
-                return (
-                    user.name.toLowerCase().includes(searchLower) ||
-                    user.location.toLowerCase().includes(searchLower) ||
-                    user.description.toLowerCase().includes(searchLower) ||
-                    user.skills.some(skill => skill.toLowerCase().includes(searchLower))
-                );
-            });
-        }
-
-        return filtered;
-    }
-
-    // Get paginated users
-    function paginateUsers(users, page, limit) {
-        const start = (page - 1) * limit;
-        const end = start + limit;
-        return users.slice(start, end);
+        });
     }
 
     // Render user cards
@@ -489,15 +490,35 @@
         loadingSpinner.style.display = 'block';
         grid.style.opacity = '0.5';
 
-        const filtered = filterUsers(allUsers, currentSearch, currentFilter);
-        const paginated = paginateUsers(filtered, currentPage, itemsPerPage);
+        try {
+            // Build API URL with parameters
+            let url = `/api/users?page=${currentPage}&limit=${itemsPerPage}`;
 
-        // Simulate slight delay for better UX
-        await new Promise(resolve => setTimeout(resolve, 200));
+            if (currentSearch) {
+                url += `&search=${encodeURIComponent(currentSearch)}`;
+            }
 
-        renderUserCards(paginated);
-        renderPagination(filtered.length, currentPage, itemsPerPage);
-        updateResultsCount(filtered.length, paginated.length);
+            if (selectedSkills.length > 0) {
+                url += `&skills=${encodeURIComponent(selectedSkills.join(','))}`;
+            }
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.success) {
+                renderUserCards(data.users);
+                renderPagination(data.total, currentPage, itemsPerPage);
+                updateResultsCount(data.total, data.users.length);
+            } else {
+                console.error('Error loading users:', data.error);
+                document.getElementById('no-results').style.display = 'block';
+                grid.innerHTML = '';
+            }
+        } catch (error) {
+            console.error('Error loading users:', error);
+            document.getElementById('no-results').style.display = 'block';
+            grid.innerHTML = '';
+        }
 
         loadingSpinner.style.display = 'none';
         grid.style.opacity = '1';
@@ -556,39 +577,50 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', async () => {
-        await loadUsersData();
+        // Load skill filters first
+        await loadSkillFilters();
+
+        // Load initial users
         loadAndDisplayUsers();
 
-        // Search functionality
+        // Search functionality with debouncing
         const searchInput = document.getElementById('search-input');
         const searchBtn = document.getElementById('search-btn');
 
+        // Debounced search input - waits for user to stop typing
         searchInput.addEventListener('input', (e) => {
             currentSearch = e.target.value;
             currentPage = 1;
-            loadAndDisplayUsers();
+
+            // Clear existing timer
+            if (searchDebounceTimer) {
+                clearTimeout(searchDebounceTimer);
+            }
+
+            // Set new timer - API call will happen after 500ms of no typing
+            searchDebounceTimer = setTimeout(() => {
+                loadAndDisplayUsers();
+            }, 500); // 500ms delay - adjust as needed
         });
 
+        // Immediate search on button click
         searchBtn.addEventListener('click', () => {
+            // Clear any pending debounced search
+            if (searchDebounceTimer) {
+                clearTimeout(searchDebounceTimer);
+            }
             loadAndDisplayUsers();
         });
 
+        // Immediate search on Enter key
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
+                // Clear any pending debounced search
+                if (searchDebounceTimer) {
+                    clearTimeout(searchDebounceTimer);
+                }
                 loadAndDisplayUsers();
             }
-        });
-
-        // Filter functionality
-        const filterBtns = document.querySelectorAll('.pill-filter');
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.dataset.filter;
-                currentPage = 1;
-                loadAndDisplayUsers();
-            });
         });
     });
 </script>

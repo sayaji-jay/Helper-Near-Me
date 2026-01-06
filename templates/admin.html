@@ -1,0 +1,928 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - {{ app_name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .admin-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #059669;
+        transform: translateY(-2px);
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+    }
+
+    .search-filter-section {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+
+    .search-box:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .users-table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .users-table thead {
+        background: #f9fafb;
+    }
+
+    .users-table th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .users-table td {
+        padding: 15px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .users-table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .skill-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #e0e7ff;
+        color: #4338ca;
+        border-radius: 4px;
+        font-size: 12px;
+        margin: 2px;
+    }
+
+    .action-btn {
+        padding: 6px 12px;
+        margin: 0 4px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .edit-btn {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .edit-btn:hover {
+        background: #2563eb;
+    }
+
+    .delete-btn {
+        background: #ef4444;
+        color: white;
+    }
+
+    .delete-btn:hover {
+        background: #dc2626;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        overflow-y: auto;
+    }
+
+    .modal-content {
+        background: white;
+        margin: 50px auto;
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 600px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1f2937;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        color: #6b7280;
+    }
+
+    .close-btn:hover {
+        color: #1f2937;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .form-textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        min-height: 100px;
+        resize: vertical;
+        box-sizing: border-box;
+    }
+
+    .form-textarea:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .file-upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .file-upload-area:hover {
+        border-color: #667eea;
+        background: #f9fafb;
+    }
+
+    .file-upload-area.drag-over {
+        border-color: #667eea;
+        background: #e0e7ff;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+        padding: 20px;
+    }
+
+    .page-btn {
+        padding: 8px 16px;
+        border: 1px solid #e5e7eb;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .page-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .page-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+    }
+
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #10b981;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #ef4444;
+    }
+
+    .alert-info {
+        background: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #3b82f6;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+    }
+
+    .spinner {
+        border: 4px solid #f3f4f6;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6b7280;
+    }
+
+    .empty-state svg {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        opacity: 0.5;
+    }
+
+    .two-column-layout {
+        display: grid;
+        grid-template-columns: 400px 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    @media (max-width: 1024px) {
+        .two-column-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-card {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 100px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header -->
+    <div class="admin-header">
+        <h1 style="margin: 0; font-size: 32px;">Admin Panel</h1>
+        <p style="margin: 10px 0 0 0; opacity: 0.9;">Manage users, upload data, and monitor statistics</p>
+    </div>
+
+    <!-- Alert Messages -->
+    <div id="alert-success" class="alert alert-success"></div>
+    <div id="alert-error" class="alert alert-error"></div>
+    <div id="alert-info" class="alert alert-info"></div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="total-users">0</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="total-pages">0</div>
+            <div class="stat-label">Total Pages</div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="two-column-layout">
+
+        <!-- Left Column: Add/Edit User Form -->
+        <div>
+            <div class="form-card">
+                <div class="form-header">
+                    <h2 style="margin: 0; font-size: 20px; font-weight: 700; color: #1f2937;" id="form-title">Add New User</h2>
+                    <button id="reset-form-btn" onclick="resetForm()" style="display: none; padding: 6px 12px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">Cancel Edit</button>
+                </div>
+
+                <form id="user-form">
+                    <input type="hidden" id="user-id">
+
+                    <div class="form-group">
+                        <label class="form-label">Name *</label>
+                        <input type="text" id="user-name" class="form-input" required placeholder="Enter full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" id="user-email" class="form-input" required placeholder="example@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phone *</label>
+                        <input type="tel" id="user-phone" class="form-input" required placeholder="+91 98765 43210">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Location *</label>
+                        <input type="text" id="user-location" class="form-input" required placeholder="City, State">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Skills (comma-separated) *</label>
+                        <input type="text" id="user-skills" class="form-input" placeholder="Python, JavaScript, React" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description *</label>
+                        <textarea id="user-description" class="form-textarea" required placeholder="Describe skills and experience..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Experience *</label>
+                        <input type="text" id="user-experience" class="form-input" placeholder="5 years" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span id="submit-btn-text">Add User</span>
+                    </button>
+                </form>
+
+                <!-- Bulk Upload Section -->
+                <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e5e7eb;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: #374151;">Bulk Actions</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn btn-success" onclick="openBulkUploadModal()" style="width: 100%; justify-content: center;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            Bulk Upload
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadTemplate()" style="width: 100%; justify-content: center;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Download Template
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Users List -->
+        <div>
+            <!-- Search & Filter -->
+            <div class="search-filter-section">
+                <input type="text" id="admin-search" class="search-box" placeholder="Search by name, email, location, skills...">
+            </div>
+
+            <!-- Users Table -->
+            <div class="users-table-container">
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading users...</p>
+                </div>
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                    </svg>
+                    <h3>No users found</h3>
+                    <p>Start by adding a new user using the form on the left</p>
+                </div>
+                <table class="users-table" id="users-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Location</th>
+                            <th>Skills</th>
+                            <th>Experience</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Upload Modal -->
+<div id="bulk-upload-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Bulk Upload Users</h2>
+            <button class="close-btn" onclick="closeBulkUploadModal()">&times;</button>
+        </div>
+        <div class="file-upload-area" id="file-upload-area">
+            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 15px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p style="margin: 0; font-size: 16px; font-weight: 600;">Click to upload or drag and drop</p>
+            <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">CSV or Excel files only</p>
+            <input type="file" id="bulk-file-input" accept=".csv,.xlsx,.xls" style="display: none;">
+        </div>
+        <div id="upload-progress" style="display: none; margin-top: 20px;">
+            <div class="spinner"></div>
+            <p style="text-align: center;">Uploading...</p>
+        </div>
+        <div id="upload-results" style="display: none; margin-top: 20px;"></div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentSearch = '';
+    let isEditMode = false;
+
+    // Load users
+    async function loadUsers() {
+        try {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('users-table').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'none';
+
+            const response = await fetch(`/api/users?page=${currentPage}&limit=20&search=${currentSearch}`);
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('total-users').textContent = data.total;
+                document.getElementById('total-pages').textContent = data.pages;
+                totalPages = data.pages;
+
+                if (data.users.length === 0) {
+                    document.getElementById('empty-state').style.display = 'block';
+                } else {
+                    renderUsersTable(data.users);
+                }
+
+                renderPagination();
+            }
+
+            document.getElementById('loading').style.display = 'none';
+        } catch (error) {
+            showAlert('error', 'Error loading users: ' + error.message);
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    // Render users table
+    function renderUsersTable(users) {
+        const tbody = document.getElementById('users-tbody');
+        tbody.innerHTML = '';
+
+        users.forEach(user => {
+            const skillsHtml = user.skills.map(skill =>
+                `<span class="skill-badge">${skill}</span>`
+            ).join('');
+
+            const row = `
+                <tr>
+                    <td><strong>${user.name}</strong></td>
+                    <td>${user.email}</td>
+                    <td>${user.phone}</td>
+                    <td>${user.location}</td>
+                    <td>${skillsHtml}</td>
+                    <td>${user.experience}</td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editUser('${user.id}')">Edit</button>
+                        <button class="action-btn delete-btn" onclick="deleteUser('${user.id}', '${user.name}')">Delete</button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+
+        document.getElementById('users-table').style.display = 'table';
+    }
+
+    // Render pagination
+    function renderPagination() {
+        const pagination = document.getElementById('pagination');
+
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+
+        let html = `
+            <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">
+                Previous
+            </button>
+        `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            html += `
+                <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">
+                    ${i}
+                </button>
+            `;
+        }
+
+        html += `
+            <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">
+                Next
+            </button>
+        `;
+
+        pagination.innerHTML = html;
+    }
+
+    // Go to page
+    function goToPage(page) {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        loadUsers();
+    }
+
+    // Search users
+    document.getElementById('admin-search').addEventListener('input', (e) => {
+        currentSearch = e.target.value;
+        currentPage = 1;
+        loadUsers();
+    });
+
+    // Show alert
+    function showAlert(type, message) {
+        const alertId = `alert-${type}`;
+        const alert = document.getElementById(alertId);
+        alert.textContent = message;
+        alert.style.display = 'block';
+
+        setTimeout(() => {
+            alert.style.display = 'none';
+        }, 5000);
+
+        // Scroll to top to see the alert
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Reset form to add mode
+    function resetForm() {
+        isEditMode = false;
+        document.getElementById('form-title').textContent = 'Add New User';
+        document.getElementById('submit-btn-text').textContent = 'Add User';
+        document.getElementById('user-form').reset();
+        document.getElementById('user-id').value = '';
+        document.getElementById('reset-form-btn').style.display = 'none';
+    }
+
+    // Edit user - Load user data into the form
+    async function editUser(userId) {
+        try {
+            const response = await fetch(`/api/users/${userId}`);
+            const data = await response.json();
+
+            if (data.success) {
+                isEditMode = true;
+                const user = data.user;
+
+                // Update form title and button
+                document.getElementById('form-title').textContent = 'Edit User';
+                document.getElementById('submit-btn-text').textContent = 'Update User';
+                document.getElementById('reset-form-btn').style.display = 'block';
+
+                // Fill form with user data
+                document.getElementById('user-id').value = user.id;
+                document.getElementById('user-name').value = user.name;
+                document.getElementById('user-email').value = user.email;
+                document.getElementById('user-phone').value = user.phone;
+                document.getElementById('user-location').value = user.location;
+                document.getElementById('user-skills').value = user.skills.join(', ');
+                document.getElementById('user-description').value = user.description;
+                document.getElementById('user-experience').value = user.experience;
+
+                // Scroll to form
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        } catch (error) {
+            showAlert('error', 'Error loading user: ' + error.message);
+        }
+    }
+
+    // Delete user
+    async function deleteUser(userId, userName) {
+        if (!confirm(`Are you sure you want to delete ${userName}?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/users/${userId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showAlert('success', 'User deleted successfully');
+                loadUsers();
+            } else {
+                showAlert('error', data.error || 'Error deleting user');
+            }
+        } catch (error) {
+            showAlert('error', 'Error deleting user: ' + error.message);
+        }
+    }
+
+    // Submit user form
+    document.getElementById('user-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const userId = document.getElementById('user-id').value;
+        const userData = {
+            name: document.getElementById('user-name').value,
+            email: document.getElementById('user-email').value,
+            phone: document.getElementById('user-phone').value,
+            location: document.getElementById('user-location').value,
+            skills: document.getElementById('user-skills').value.split(',').map(s => s.trim()),
+            description: document.getElementById('user-description').value,
+            experience: document.getElementById('user-experience').value
+        };
+
+        try {
+            const url = isEditMode ? `/api/users/${userId}` : '/api/users';
+            const method = isEditMode ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showAlert('success', data.message);
+                resetForm();
+                loadUsers();
+            } else {
+                showAlert('error', data.error || 'Error saving user');
+            }
+        } catch (error) {
+            showAlert('error', 'Error saving user: ' + error.message);
+        }
+    });
+
+    // Open bulk upload modal
+    function openBulkUploadModal() {
+        document.getElementById('bulk-upload-modal').style.display = 'block';
+        document.getElementById('upload-results').style.display = 'none';
+    }
+
+    // Close bulk upload modal
+    function closeBulkUploadModal() {
+        document.getElementById('bulk-upload-modal').style.display = 'none';
+    }
+
+    // File upload area
+    const fileUploadArea = document.getElementById('file-upload-area');
+    const fileInput = document.getElementById('bulk-file-input');
+
+    fileUploadArea.addEventListener('click', () => fileInput.click());
+
+    fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.add('drag-over');
+    });
+
+    fileUploadArea.addEventListener('dragleave', () => {
+        fileUploadArea.classList.remove('drag-over');
+    });
+
+    fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleBulkUpload(e.dataTransfer.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            handleBulkUpload(e.target.files[0]);
+        }
+    });
+
+    // Handle bulk upload
+    async function handleBulkUpload(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            document.getElementById('upload-progress').style.display = 'block';
+
+            const response = await fetch('/api/users/bulk-upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            document.getElementById('upload-progress').style.display = 'none';
+
+            if (data.success) {
+                let resultsHtml = `
+                    <div style="padding: 20px; background: #d1fae5; border-radius: 8px;">
+                        <h3 style="margin: 0 0 10px 0; color: #065f46;">Upload Successful!</h3>
+                        <p style="margin: 5px 0;">Inserted: ${data.inserted} users</p>
+                        <p style="margin: 5px 0;">Errors: ${data.errors}</p>
+                `;
+
+                if (data.error_details && data.error_details.length > 0) {
+                    resultsHtml += '<div style="margin-top: 15px; max-height: 200px; overflow-y: auto;"><strong>Error Details:</strong><ul style="margin: 5px 0;">';
+                    data.error_details.forEach(error => {
+                        resultsHtml += `<li style="color: #991b1b;">${error}</li>`;
+                    });
+                    resultsHtml += '</ul></div>';
+                }
+
+                resultsHtml += '</div>';
+
+                document.getElementById('upload-results').innerHTML = resultsHtml;
+                document.getElementById('upload-results').style.display = 'block';
+
+                loadUsers();
+            } else {
+                showAlert('error', data.error || 'Error uploading file');
+            }
+        } catch (error) {
+            document.getElementById('upload-progress').style.display = 'none';
+            showAlert('error', 'Error uploading file: ' + error.message);
+        }
+    }
+
+    // Download template
+    function downloadTemplate() {
+        window.location.href = '/api/users/template/download';
+    }
+
+    // Initialize
+    loadUsers();
+</script>
+{% endblock %}
