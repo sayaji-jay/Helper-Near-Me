@@ -118,6 +118,29 @@ def add_user():
     return render_template('add_user.html', app_name="Helper Near Me")
 
 
+@app.route('/register')
+def register():
+    """Worker self-registration page"""
+    return render_template('register.html', app_name="Helper Near Me")
+
+
+@app.route('/profile/<user_id>')
+def profile(user_id):
+    """Worker profile page"""
+    try:
+        users_collection = get_users_collection()
+        user = users_collection.find_one({'_id': ObjectId(user_id)})
+
+        if not user:
+            return render_template('404.html', app_name="Helper Near Me"), 404
+
+        serialized_user = UserModel.serialize_user(user)
+        return render_template('profile.html', user=serialized_user, app_name="Helper Near Me")
+
+    except Exception as e:
+        return render_template('500.html', app_name="Helper Near Me"), 500
+
+
 @app.route('/api/users', methods=['GET'])
 def get_users():
     """API endpoint to get users data from MongoDB with search and filter"""
