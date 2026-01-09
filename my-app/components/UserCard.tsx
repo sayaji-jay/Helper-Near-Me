@@ -1,4 +1,5 @@
 import { User } from '@/types';
+import Link from 'next/link';
 
 interface UserCardProps {
   user: User;
@@ -6,9 +7,12 @@ interface UserCardProps {
 
 export default function UserCard({ user }: UserCardProps) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative group cursor-pointer">
+      {/* Clickable overlay to profile */}
+      <Link href={`/profile/${user.id}`} className="absolute inset-0 z-0" aria-label={`View ${user.name}'s profile`} />
+
       {/* Header with Avatar and Name */}
-      <div className="flex items-center mb-4">
+      <div className="flex items-center mb-4 relative z-10">
         <img src={user.avatar} alt={user.name} className="w-16 h-16 rounded-full mr-4 object-cover" />
         <div className="flex-1">
           <h3 className="text-lg font-bold text-gray-900">{user.name}</h3>
@@ -101,12 +105,13 @@ export default function UserCard({ user }: UserCardProps) {
       </div>
 
       {/* Action Buttons */}
-      <div className="border-t pt-4 mt-auto">
+      <div className="border-t pt-4 mt-auto relative z-10">
         <div className="flex space-x-2">
           {user.phone && (
             <a
               href={`tel:${user.phone}`}
-              className="flex-1 bg-gray-900 text-white text-center py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+              className="flex-1 bg-gray-900 text-white text-center py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium relative z-10"
+              onClick={(e) => e.stopPropagation()}
             >
               Call
             </a>
@@ -114,12 +119,19 @@ export default function UserCard({ user }: UserCardProps) {
           {user.email && (
             <a
               href={`mailto:${user.email}`}
-              className="flex-1 border border-gray-300 text-gray-700 text-center py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+              className="flex-1 border border-gray-300 text-gray-700 text-center py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium relative z-10"
+              onClick={(e) => e.stopPropagation()}
             >
               Email
             </a>
           )}
         </div>
+        <Link
+          href={`/profile/${user.id}`}
+          className="mt-2 block text-center text-indigo-600 hover:text-indigo-700 text-sm font-medium relative z-10"
+        >
+          View Full Profile →
+        </Link>
       </div>
     </div>
   );

@@ -57,6 +57,9 @@ export default function Header() {
               <Link href="/" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
                 Home
               </Link>
+              <Link href="/register" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
+                Register
+              </Link>
               <a href="#testimonials-section" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
                 Testimonials
               </a>
